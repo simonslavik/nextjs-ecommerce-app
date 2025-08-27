@@ -5,11 +5,13 @@ import SelectComponent from "@/components/FormElements/SelectComponent";
 
 
 import { GlobalContext } from "@/context";
+import { registerNewUser } from "@/services/register";
 
 import { registrationFormControls } from "@/utils";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+
 
 const initialFormData = {
   name: "",
@@ -42,23 +44,8 @@ export default function Register() {
   console.log(isFormValid());
 
   async function handleRegisterOnSubmit() {
-    setPageLevelLoader(true);
+  
     const data = await registerNewUser(formData);
-
-    if (data.success) {
-      toast.success(data.message, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      setIsRegistered(true);
-      setPageLevelLoader(false);
-      setFormData(initialFormData);
-    } else {
-      toast.error(data.message, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      setPageLevelLoader(false);
-      setFormData(initialFormData);
-    }
 
     console.log(data);
   }
