@@ -10,6 +10,12 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { login } from "@/services/login";
+import ComponentLevelLoader from "@/components/Loader/index";
+import { set } from "mongoose";
+import Notification from "@/components/Notification/index";
+
+
 
 const initialFormdata = {
   email: "",
@@ -25,6 +31,8 @@ export default function Login() {
     setUser,
     componentLevelLoader,
     setComponentLevelLoader,
+    pageLevelLoader,
+    setPageLevelLoader
   } = useContext(GlobalContext);
 
   const router = useRouter();
@@ -42,27 +50,36 @@ export default function Login() {
   }
 
   async function handleLogin() {
-    setComponentLevelLoader({ loading: true, id: "" });
+    if (!isValidForm()) {
+      toast.error("Please fill all the fields");
+      return;
+    }
+    setComponentLevelLoader({ loading: true });
+
     const res = await login(formData);
 
     console.log(res);
 
     if (res.success) {
       toast.success(res.message, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      } );
       setIsAuthUser(true);
       setUser(res?.finalData?.user);
       setFormData(initialFormdata);
       Cookies.set("token", res?.finalData?.token);
       localStorage.setItem("user", JSON.stringify(res?.finalData?.user));
-      setComponentLevelLoader({ loading: false, id: "" });
+      setComponentLevelLoader({ loading: false });
     } else {
-      toast.error(res.message, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
+      toast.error(res.message);
       setIsAuthUser(false);
-      setComponentLevelLoader({ loading: false, id: "" });
+      setComponentLevelLoader({ loading: false });
     }
   }
 
@@ -134,6 +151,7 @@ export default function Login() {
           </div>
         </div>
       </div>
+      <Notification/>
     </div>
   );
 }

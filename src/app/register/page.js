@@ -2,16 +2,14 @@
 
 import InputComponent from "@/components/FormElements/InputComponent";
 import SelectComponent from "@/components/FormElements/SelectComponent";
-
+import ComponentLevelLoader from "@/components/Loader/index";
 
 import { GlobalContext } from "@/context";
 import { registerNewUser } from "@/services/register";
-
 import { registrationFormControls } from "@/utils";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-
 
 const initialFormData = {
   name: "",
@@ -30,22 +28,33 @@ export default function Register() {
   console.log(formData);
 
   function isFormValid() {
-    return formData &&
-      formData.name &&
+    return (
+      formData &&
+      typeof formData.name === "string" &&
       formData.name.trim() !== "" &&
-      formData.email &&
+      typeof formData.email === "string" &&
       formData.email.trim() !== "" &&
-      formData.password &&
+      typeof formData.password === "string" &&
       formData.password.trim() !== ""
-      ? true
-      : false;
+    );
   }
 
   console.log(isFormValid());
 
   async function handleRegisterOnSubmit() {
-  
+    setPageLevelLoader(true);
     const data = await registerNewUser(formData);
+
+    if (data.success) {
+      toast.success(data.message);
+      setIsRegistered(true);
+      setPageLevelLoader(false);
+      setFormData(initialFormData);
+    } else {
+      toast.error(data.message);
+      setPageLevelLoader(false);
+      setFormData(initialFormData);
+    }
 
     console.log(data);
   }
@@ -67,7 +76,7 @@ export default function Register() {
               </p>
               {isRegistered ? (
                 <button
-                  className="inline-flex w-full items-center justify-center bg-black px-6 py-4 text-lg 
+                  className="inline-flex w-full items-center justify-center bg-black px-6 py-4 text-lg mt-2
                 text-white transition-all duration-200 ease-in-out focus:shadow font-medium uppercase tracking-wide
                 "
                 onClick={()=>router.push('/login')}
@@ -79,31 +88,30 @@ export default function Register() {
                   {registrationFormControls.map((controlItem) =>
                     controlItem.componentType === "input" ? (
                       <InputComponent
+                        key={controlItem.id}
                         type={controlItem.type}
                         placeholder={controlItem.placeholder}
                         label={controlItem.label}
-                        onChange={(event) => {
+                        onChange={(e) => {
                           setFormData({
                             ...formData,
-                            [controlItem.id]: event.target.value,
+                            [controlItem.id]: e.target.value,
                           });
                         }}
                         value={formData[controlItem.id]}
-                        
-                        key={controlItem.id}
                       />
                     ) : controlItem.componentType === "select" ? (
                       <SelectComponent
+                        key={controlItem.id}
                         options={controlItem.options}
                         label={controlItem.label}
-                        onChange={(event) => {
+                        onChange={(value) => {
                           setFormData({
                             ...formData,
-                            [controlItem.id]: event.target.value,
+                            [controlItem.id]: value,
                           });
                         }}
                         value={formData[controlItem.id]}
-                        key={controlItem.id}
                       />
                     ) : null
                   )}
@@ -130,6 +138,7 @@ export default function Register() {
           </div>
         </div>
       </div>
+      
     </div>
   );
 }
