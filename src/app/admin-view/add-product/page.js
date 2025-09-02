@@ -9,6 +9,12 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import { firebaseStorageURL } from "@/utils/index";
 import { useState } from "react";
 import { addNewProduct } from "@/services/product";
+import { GlobalContext } from "@/context";
+import { set } from "mongoose";
+import { toast } from "react-toastify";
+import { useContext } from "react";
+import Notification from "@/components/Notification";
+import ComponentLevelLoader from "@/components/Loader";
 
 
 const createUniqueFileName = (getFile)=> {
@@ -56,6 +62,10 @@ export default function AdminAddNewProduct() {
     
     const [formData, setFormData] = useState(initialFormData);
 
+    const {componentLevelLoader, setComponentLevelLoader} = useContext(GlobalContext)
+
+
+
     async function handleImage(event) {
         console.log(event.target.files[0]);
         const extractImageUrl = await helperForUploadingImageToFirebase(event.target.files[0]);
@@ -81,8 +91,21 @@ export default function AdminAddNewProduct() {
     }
     
     async function handleAddProduct() {
+        setComponentLevelLoader(true);
         const res = await addNewProduct(formData);
         console.log(res);
+
+        if(res.success) {
+            setComponentLevelLoader(false);
+            toast.success(res.message, {
+                position: toast.POSITION.TOP_RIGHT
+            })
+        } else {
+            toast.error(res.message, {
+                position: toast.POSITION.TOP_RIGHT
+            })
+            setComponentLevelLoader(false);
+        }
     }
     
     console.log(formData);
@@ -115,11 +138,17 @@ export default function AdminAddNewProduct() {
                             ) : null
                         )
                     }
-                    <button onClick={handleAddProduct} className="inline-flex w-full items-center justify-center bg-black px-6 py-4 text-lg text-white font-medium uppercase tracking-white">
+                    <button onClick={handleAddProduct} className="inline-flex w-full items-center justify-center bg-black px-6 py-4 text-lg text-white font-medium uppercase tracking-white cursior-pointer hover:bg-gray-800">
+                        {
+                            componentLevelLoader && componentLevelLoader === true ? (
+                                <ComponentLevelLoader text={"Adding Product..."} color={"#ffffff"} loading={componentLevelLoader && componentLevelLoader === true} />
+                            ) : null
+                        }
                         Add Product
                     </button>
                 </div>
             </div>
+            <Notification/>
         </div>
     )
 }
