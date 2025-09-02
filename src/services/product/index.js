@@ -1,5 +1,5 @@
 
-
+import Cookies from "js-cookie";
 
 // add a new product service
 

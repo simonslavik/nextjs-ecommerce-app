@@ -189,17 +189,19 @@ export const AvailableSizes = [
 ];
 
 export const firebaseConfig = {
-  apiKey: "API_KEY",
-  authDomain: "AUTH_DOMAIN",
-  projectId: "PROJECT_ID",
-  storageBucket: "STROAGE_BUCKET",
-  messagingSenderId: "MESSAGING_SENDER_ID",
-  appId: "APP_ID",
-  measurementId: "MEASUREMENT_ID",
+  apiKey: "AIzaSyDdDYuYCyFcj_keVNJ7p3wgmf6uMyJB4t8",
+  authDomain: "next-js-ecommerce-2025-323a6.firebaseapp.com",
+  projectId: "next-js-ecommerce-2025-323a6",
+  storageBucket: "next-js-ecommerce-2025-323a6.firebasestorage.app",
+  messagingSenderId: "526836105256",
+  appId: "1:526836105256:web:728f816261f6f19b58751d",
+  measurementId: "G-7V7LRFSLJP"
 };
 
-export const firebaseStroageURL =
-  "YOUR_FIREBASE_STROAGE_URL";
+
+
+export const firebaseStorageURL =
+  "YOUR_FIREBASE_STORAGE_URL";
 
 export const addNewAddressFormControls = [
   {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import connectToDB from "@/utils/database";
+import connectToDB from "@/database";
 import Joi from "joi";
+import Product from "@/models/product";
 
 
 const AddNewProductSchema = Joi.object({
@@ -12,7 +13,6 @@ const AddNewProductSchema = Joi.object({
     deliveryInfo: Joi.string().required(),
     onSale: Joi.string().required(),
     priceDrop: Joi.number().required(),
-    imageUrl: Joi.string().uri().required()
 });
         
 
@@ -31,11 +31,11 @@ export async function POST(req){
             const extractData = await req.json();
 
             const {
-                name, description, price, imageUrl, category, sizes, deliveryInfo, onSale, priceDrop
+                name, description, price,  category, sizes, deliveryInfo, onSale, priceDrop
             } = extractData;
 
             const { error } = AddNewProductSchema.validate({
-                name, description, price, imageUrl, category, sizes, deliveryInfo, onSale, priceDrop
+                name, description, price,  category, sizes, deliveryInfo, onSale, priceDrop
             });
 
             if(error){
@@ -44,7 +44,7 @@ export async function POST(req){
                     message: error.details[0].message,
                 })
             }
-            const newlyCreatedProduct = await Product.create({extractData});
+            const newlyCreatedProduct = await Product.create(extractData);
 
             if(newlyCreatedProduct){
                 return NextResponse.json({
