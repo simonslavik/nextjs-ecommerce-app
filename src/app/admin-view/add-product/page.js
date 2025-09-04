@@ -15,6 +15,11 @@ import { toast } from "react-toastify";
 import { useContext } from "react";
 import Notification from "@/components/Notification";
 import ComponentLevelLoader from "@/components/Loader";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { updateAProduct } from "@/services/product";
+
+
 
 
 const createUniqueFileName = (getFile)=> {
@@ -62,8 +67,16 @@ export default function AdminAddNewProduct() {
     
     const [formData, setFormData] = useState(initialFormData);
 
-    const {componentLevelLoader, setComponentLevelLoader} = useContext(GlobalContext)
+    const {componentLevelLoader, setComponentLevelLoader, currentUpdatedProduct, setCurrentUpdatedProduct} = useContext(GlobalContext)
 
+    const router = useRouter();
+
+
+    useEffect(()=> {
+        if(currentUpdatedProduct !== null){
+            setFormData(currentUpdatedProduct);
+        }
+    })
 
 
     async function handleImage(event) {
@@ -92,18 +105,19 @@ export default function AdminAddNewProduct() {
     
     async function handleAddProduct() {
         setComponentLevelLoader(true);
-        const res = await addNewProduct(formData);
+        const res = currentUpdatedProduct !== null ? await updateAProduct(formData) : await addNewProduct(formData);
         console.log(res);
 
         if(res.success) {
             setComponentLevelLoader(false);
-            toast.success(res.message, {
-                position: toast.POSITION.TOP_RIGHT
-            })
+            toast.success(res.message)
+            setFormData(initialFormData);
+            setCurrentUpdatedProduct(null);
+            setTimeout(()=>{
+                router.push('/admin-view/products')
+            }, 1000)
         } else {
-            toast.error(res.message, {
-                position: toast.POSITION.TOP_RIGHT
-            })
+            toast.error(res.message)
             setComponentLevelLoader(false);
         }
     }
@@ -113,42 +127,73 @@ export default function AdminAddNewProduct() {
         <div className="w-full mt-5 mr-0 mb-0 ml-0 relative">
             <div className="flex flex-col items-start justify-start p-10 bg-white shadow-2xl rounded-xl relative">
                 <div className="w-full mt-6 mr-0 mb-0 ml-0 space-y-8">
-                    <input accept="image/*"
-                    max="1000000" type="file" onChange={handleImage}/>
+                    <input
+                        accept="image/*"
+                        max="1000000"
+                        type="file"
+                        onChange={handleImage}
+                    />
                     <div className="flex gap-2 flex-col">
                         <label>Available sizes</label>
-                        <TileComponent selected={formData.sizes} onClick={handleTileClick} data={AvailableSizes} />
+                        <TileComponent
+                            selected={formData.sizes}
+                            onClick={handleTileClick}
+                            data={AvailableSizes}
+                        />
                     </div>
-                    {
-                        adminAddProductformControls.map((controlItem, idx) =>
-                            controlItem.componentType === "input" ? (
+                    {adminAddProductformControls.map((controlItem, idx) => {
+                        if (controlItem.componentType === "input") {
+                            return (
                                 <InputComponent
                                     key={controlItem.label || idx}
                                     type={controlItem.type}
                                     placeholder={controlItem.placeholder}
                                     label={controlItem.label}
-                                    onChange={(event)=> setFormData({...formData, [controlItem.id]: event.target.value})}
+                                    value={formData[controlItem.id]}
+                                    onChange={(valueOrEvent) =>
+                                        setFormData({
+                                            ...formData,
+                                            [controlItem.id]: valueOrEvent?.target?.value ?? valueOrEvent,
+                                        })
+                                    }
                                 />
-                            ) : controlItem.componentType === "select" ? (
+                            );
+                        } else if (controlItem.componentType === "select") {
+                            return (
                                 <SelectComponent
                                     key={controlItem.label || idx}
                                     label={controlItem.label}
                                     options={controlItem.options}
+                                    value={formData[controlItem.id]}
+                                    onChange={(event) =>
+                                        setFormData({
+                                            ...formData,
+                                            [controlItem.id]: event?.target?.value ?? event,
+                                        })
+                                    }
                                 />
-                            ) : null
-                        )
-                    }
-                    <button onClick={handleAddProduct} className="inline-flex w-full items-center justify-center bg-black px-6 py-4 text-lg text-white font-medium uppercase tracking-white cursior-pointer hover:bg-gray-800">
-                        {
-                            componentLevelLoader && componentLevelLoader === true ? (
-                                <ComponentLevelLoader text={"Adding Product..."} color={"#ffffff"} loading={componentLevelLoader && componentLevelLoader === true} />
-                            ) : null
+                            );
                         }
-                        Add Product
+                        return null;
+                    })}
+                    <button
+                        onClick={handleAddProduct}
+                        className="inline-flex w-full items-center justify-center bg-black px-6 py-4 text-lg text-white font-medium uppercase tracking-wide cursor-pointer hover:bg-gray-800"
+                        
+                    >
+                        {componentLevelLoader === true ? (
+                            <ComponentLevelLoader
+                                text={currentUpdatedProduct !== null ? "Updating Product" : "Adding Product"}
+                                color={"#ffffff"}
+                                loading={componentLevelLoader === true}
+                            />
+                        ) : (
+                            currentUpdatedProduct !== null ? "Update Product" :
+                            "Add Product")}
                     </button>
                 </div>
             </div>
-            <Notification/>
+            <Notification />
         </div>
-    )
+    );
 }

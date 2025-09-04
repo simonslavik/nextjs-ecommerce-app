@@ -64,7 +64,11 @@ export default function Navbar() {
 
   console.log(currentUpdatedProduct, "navbar");
 
-  
+  useEffect(() => {
+    if(pathName !== "/admin-view/add-product" && currentUpdatedProduct !== null){
+      setCurrentUpdatedProduct(null);
+    }
+  },[pathName])
 
   function handleLogout() {
     setIsAuthUser(false);
